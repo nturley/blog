@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>yowasp_sby</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Yowasp_sby_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Yowasp_sby_files/libs/quarto-html/quarto.js"></script>
+<script src="Yowasp_sby_files/libs/quarto-html/popper.min.js"></script>
+<script src="Yowasp_sby_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Yowasp_sby_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Yowasp_sby_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Yowasp_sby_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Yowasp_sby_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Yowasp_sby_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Yowasp_sby_files/libs/bootstrap/bootstrap-8a79a254b8e706d3c925cde0a310d4f0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<p><a href="https://colab.research.google.com/github/nturley/blog/blob/main/Yowasp_sby.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a></p>
+<section id="install-deps" class="level1">
+<h1>Install Deps</h1>
+<div id="cell-2" class="cell" data-outputid="777b356d-65f7-40f3-a611-a8d632fabc6c">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install nmigen</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install nbmc</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>npm i <span class="op">-</span>g netlistsvg</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install parse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Collecting nmigen
+  Downloading https://files.pythonhosted.org/packages/43/08/162d253c8d41460cffda0ca4d60f7fb075bb2b787b82089189c76a33f121/nmigen-0.2.tar.gz (144kB)
+     |██▎                             | 10kB 15.8MB/s eta 0:00:01     |████▌                           | 20kB 20.9MB/s eta 0:00:01     |██████▉                         | 30kB 25.7MB/s eta 0:00:01     |█████████                       | 40kB 27.2MB/s eta 0:00:01     |███████████▍                    | 51kB 14.4MB/s eta 0:00:01     |█████████████▋                  | 61kB 15.7MB/s eta 0:00:01     |████████████████                | 71kB 14.0MB/s eta 0:00:01     |██████████████████▏             | 81kB 12.0MB/s eta 0:00:01     |████████████████████▍           | 92kB 12.8MB/s eta 0:00:01     |██████████████████████▊         | 102kB 11.3MB/s eta 0:00:01     |█████████████████████████       | 112kB 11.3MB/s eta 0:00:01     |███████████████████████████▎    | 122kB 11.3MB/s eta 0:00:01     |█████████████████████████████▌  | 133kB 11.3MB/s eta 0:00:01     |███████████████████████████████▉| 143kB 11.3MB/s eta 0:00:01     |████████████████████████████████| 153kB 11.3MB/s 
+Requirement already satisfied: setuptools in /usr/local/lib/python3.6/dist-packages (from nmigen) (50.3.2)
+Collecting pyvcd~=0.1.4
+  Downloading https://files.pythonhosted.org/packages/01/3e/2ff169806a094365722f6670cc777f83bd93c56471ccc260cc5e0ba36b50/pyvcd-0.1.7-py2.py3-none-any.whl
+Requirement already satisfied: Jinja2 in /usr/local/lib/python3.6/dist-packages (from nmigen) (2.11.2)
+Requirement already satisfied: six in /usr/local/lib/python3.6/dist-packages (from pyvcd~=0.1.4-&gt;nmigen) (1.15.0)
+Requirement already satisfied: MarkupSafe&gt;=0.23 in /usr/local/lib/python3.6/dist-packages (from Jinja2-&gt;nmigen) (1.1.1)
+Building wheels for collected packages: nmigen
+  Building wheel for nmigen (setup.py) ... done
+  Created wheel for nmigen: filename=nmigen-0.2-cp36-none-any.whl size=169778 sha256=4e333dfce1316cf6e3809d96fae685e58cdff3025b199da513c155660ecb3d79
+  Stored in directory: /root/.cache/pip/wheels/47/0f/c4/a5f4c9f18186d2b36cd98499488d0b68ac2cbf9a9db5c3bedf
+Successfully built nmigen
+Installing collected packages: pyvcd, nmigen
+Successfully installed nmigen-0.2 pyvcd-0.1.7
+Collecting nbmc
+  Downloading https://files.pythonhosted.org/packages/0c/76/617430745209c535d99bfc8dc81866a105202ae965e57f91f12cad2d0f4a/nbmc-0.0.4.tar.gz
+Collecting yowasp-yosys
+  Downloading https://files.pythonhosted.org/packages/26/32/bffefeb21fe5eb5f65c31b4cc4f2f70b4f58cf143f47e1cab83dc9537ef8/yowasp_yosys-0.9.post5043.dev70-py3-none-any.whl (6.5MB)
+     |████████████████████████████████| 6.5MB 8.0MB/s 
+Collecting wavedrom
+  Downloading https://files.pythonhosted.org/packages/07/e2/7e71626b60e5549d0dd2d07dd15569d71dbda4d648fc77293aa528dc6c49/wavedrom-2.0.3.post2.tar.gz (138kB)
+     |████████████████████████████████| 143kB 47.5MB/s 
+Collecting z3-solver
+  Downloading https://files.pythonhosted.org/packages/6d/51/86d4d708593b77dd43e1154f25b107d9d9a3300da49759c88254192a0a04/z3_solver-4.8.9.0-py2.py3-none-manylinux1_x86_64.whl (30.5MB)
+     |████████████████████████████████| 30.5MB 152kB/s 
+Collecting pyDigitalWaveTools
+  Downloading https://files.pythonhosted.org/packages/c8/41/2c4ece0bb5be7e5f75b4b2fa654482ebfea33e31797c37e93290383c1b8f/pyDigitalWaveTools-1.0.tar.gz
+Collecting parse
+  Downloading https://files.pythonhosted.org/packages/b8/49/85f19d9ff908817b864deebf7f68211f9a6fc0b48746d372d970f60d01f5/parse-1.18.0.tar.gz
+Requirement already satisfied: nmigen in /usr/local/lib/python3.6/dist-packages (from nbmc) (0.2)
+Requirement already satisfied: importlib-resources; python_version &lt; "3.9" in /usr/local/lib/python3.6/dist-packages (from yowasp-yosys-&gt;nbmc) (3.3.0)
+Collecting appdirs~=1.4
+  Downloading https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl
+Collecting wasmtime&lt;0.22,&gt;=0.20
+  Downloading https://files.pythonhosted.org/packages/0c/89/0ed12ac1ab836c6b7114f21eba12c750bc0c442f7580255386708cf773d7/wasmtime-0.21.0-py3-none-manylinux1_x86_64.whl (4.7MB)
+     |████████████████████████████████| 4.7MB 42.7MB/s 
+Collecting svgwrite
+  Downloading https://files.pythonhosted.org/packages/1c/85/1dc25b36c3ac4f3fe285d33065fc0f2ea7bdfb9209d6369e01a3e8ef6252/svgwrite-1.4-py3-none-any.whl (66kB)
+     |████████████████████████████████| 71kB 9.3MB/s 
+Collecting attrdict
+  Downloading https://files.pythonhosted.org/packages/ef/97/28fe7e68bc7adfce67d4339756e85e9fcf3c6fd7f0c0781695352b70472c/attrdict-2.0.1-py2.py3-none-any.whl
+Requirement already satisfied: six in /usr/local/lib/python3.6/dist-packages (from wavedrom-&gt;nbmc) (1.15.0)
+Requirement already satisfied: Jinja2 in /usr/local/lib/python3.6/dist-packages (from nmigen-&gt;nbmc) (2.11.2)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.6/dist-packages (from nmigen-&gt;nbmc) (50.3.2)
+Requirement already satisfied: pyvcd~=0.1.4 in /usr/local/lib/python3.6/dist-packages (from nmigen-&gt;nbmc) (0.1.7)
+Requirement already satisfied: zipp&gt;=0.4; python_version &lt; "3.8" in /usr/local/lib/python3.6/dist-packages (from importlib-resources; python_version &lt; "3.9"-&gt;yowasp-yosys-&gt;nbmc) (3.4.0)
+Requirement already satisfied: MarkupSafe&gt;=0.23 in /usr/local/lib/python3.6/dist-packages (from Jinja2-&gt;nmigen-&gt;nbmc) (1.1.1)
+Building wheels for collected packages: nbmc, wavedrom, pyDigitalWaveTools, parse
+  Building wheel for nbmc (setup.py) ... done
+  Created wheel for nbmc: filename=nbmc-0.0.4-cp36-none-any.whl size=2704 sha256=d04de9cc97ee2fc8fbada8c4a6646aeca30a1c9817c0340ebe66bc0e6a029493
+  Stored in directory: /root/.cache/pip/wheels/5a/dd/db/70f929de2ed4c65fbe98cae9a434b90d01f7f04fc218f89a3d
+  Building wheel for wavedrom (setup.py) ... done
+  Created wheel for wavedrom: filename=wavedrom-2.0.3.post2-py2.py3-none-any.whl size=32843 sha256=ba1b99a88aaffd23baad5a8e13b468f3f96f37307c2270a8c052cdc04c1651ea
+  Stored in directory: /root/.cache/pip/wheels/78/d9/b8/b7b77ae81dfe8754a37bc42a2b787ca66cbd4c9f8762f8cba2
+  Building wheel for pyDigitalWaveTools (setup.py) ... done
+  Created wheel for pyDigitalWaveTools: filename=pyDigitalWaveTools-1.0-cp36-none-any.whl size=20788 sha256=e9afa411d243f90324308e55607a1016c19d9be711e0e5dbd4adb4c262fccdaa
+  Stored in directory: /root/.cache/pip/wheels/ff/c2/4d/dbecf579a1ebd19ea6f061273805897bf30d21643e8ff99302
+  Building wheel for parse (setup.py) ... done
+  Created wheel for parse: filename=parse-1.18.0-cp36-none-any.whl size=24134 sha256=39c5bd83b782a8bcc0293fd09ab670c99bec2ad83a12b5e8eb0f59a1a52969a3
+  Stored in directory: /root/.cache/pip/wheels/2a/53/09/869ca5781ede342254ffac09ca99461b008c3e5f8dd079b0c0
+Successfully built nbmc wavedrom pyDigitalWaveTools parse
+Installing collected packages: appdirs, wasmtime, yowasp-yosys, svgwrite, attrdict, wavedrom, z3-solver, pyDigitalWaveTools, parse, nbmc
+Successfully installed appdirs-1.4.4 attrdict-2.0.1 nbmc-0.0.4 parse-1.18.0 pyDigitalWaveTools-1.0 svgwrite-1.4 wasmtime-0.21.0 wavedrom-2.0.3.post2 yowasp-yosys-0.9.post5043.dev70 z3-solver-4.8.9.0
+/tools/node/bin/netlistsvg -&gt; /tools/node/lib/node_modules/netlistsvg/bin/netlistsvg.js
+/tools/node/bin/netlistsvg-dumplayout -&gt; /tools/node/lib/node_modules/netlistsvg/bin/exportLayout.js
++ netlistsvg@1.0.2
+added 69 packages from 79 contributors in 7.095s
+Requirement already satisfied: parse in /usr/local/lib/python3.6/dist-packages (1.18.0)</code></pre>
+</div>
+</div>
+</section>
+<section id="imports" class="level1">
+<h1>Imports</h1>
+<div id="cell-4" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nmigen <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nmigen.back <span class="im">import</span> rtlil</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nmigen.asserts <span class="im">import</span> Assert, Assume, Cover, Past</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbmc <span class="im">import</span> check, Result</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> SVG, display</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> parse <span class="im">import</span> search, findall</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="nmigen-design" class="level1">
+<h1>nMigen Design</h1>
+<p>This is a simple digital design with two optional sets of assertions, one that should pass and one that should succeed. We also display a schematic of the logic we are checking.</p>
+<div id="cell-6" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>savecodelines</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> UpCounter(Elaboratable):</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, limit, formal<span class="op">=</span><span class="va">False</span>, formal_fail<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.formal <span class="op">=</span> formal</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.formal_fail <span class="op">=</span> formal_fail</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.limit <span class="op">=</span> limit</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Ports</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.en  <span class="op">=</span> Signal()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.ovf <span class="op">=</span> Signal()</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># State</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.count <span class="op">=</span> Signal(<span class="dv">16</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> elab_formal(<span class="va">self</span>, m):</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">&lt;=</span> <span class="va">self</span>.limit)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        m.d.sync <span class="op">+=</span> Assume(ResetSignal() <span class="op">==</span> <span class="va">False</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> m.If(Past(<span class="va">self</span>.en) <span class="op">==</span> <span class="va">False</span>):</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">==</span> Past(<span class="va">self</span>.count))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> m.If(Past(<span class="va">self</span>.en)):</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> m.If(Past(<span class="va">self</span>.count) <span class="op">&lt;</span> <span class="va">self</span>.limit):</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">==</span> Past(<span class="va">self</span>.count) <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> m.Else():</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>                m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">==</span> <span class="dv">0</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> elab_formal_fail(<span class="va">self</span>, m):</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>        m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">&lt;=</span> <span class="va">self</span>.limit)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        m.d.sync <span class="op">+=</span> Assume(ResetSignal() <span class="op">==</span> <span class="va">False</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> m.If(Past(<span class="va">self</span>.en) <span class="op">==</span> <span class="va">False</span>):</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>            m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">==</span> Past(<span class="va">self</span>.count))</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> m.If(Past(<span class="va">self</span>.en)):</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> m.If(Past(<span class="va">self</span>.count) <span class="op">&lt;</span> <span class="va">self</span>.limit):</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">==</span> Past(<span class="va">self</span>.count) <span class="op">+</span> <span class="dv">2</span>)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> m.Else():</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>                m.d.sync <span class="op">+=</span> Assert(<span class="va">self</span>.count <span class="op">==</span> <span class="dv">0</span>)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> elaborate(<span class="va">self</span>, platform):</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> Module()</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>        m.d.comb <span class="op">+=</span> <span class="va">self</span>.ovf.eq(<span class="va">self</span>.count <span class="op">==</span> <span class="va">self</span>.limit)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> m.If(<span class="va">self</span>.en):</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> m.If(<span class="va">self</span>.ovf):</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>                m.d.sync <span class="op">+=</span> <span class="va">self</span>.count.eq(<span class="dv">0</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>            <span class="cf">with</span> m.Else():</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>                m.d.sync <span class="op">+=</span> <span class="va">self</span>.count.eq(<span class="va">self</span>.count <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.formal:</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.elab_formal(m)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="va">self</span>.formal_fail:</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.elab_formal_fail(m)</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> m</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="run-bounded-model-check-verification" class="level1">
+<h1>Run Bounded Model Check Verification</h1>
+<p>Here we check the two sets of formal properties to see what results we get</p>
+<div id="cell-8" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.core.magic <span class="im">import</span>  (</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    Magics, magics_class, cell_magic, line_magic</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="at">@magics_class</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SaveCodeLines(Magics):</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, shell<span class="op">=</span><span class="va">None</span>,  <span class="op">**</span>kwargs):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(shell<span class="op">=</span>shell, <span class="op">**</span>kwargs)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.code <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">@cell_magic</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> savecodelines(<span class="va">self</span>, line, cell):</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""store the cell in the store"""</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.code <span class="op">=</span> cell</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.shell.run_cell(cell)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">@line_magic</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> showcodelines(<span class="va">self</span>, line):</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""show all recorded statements"""</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.code</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co">## use ipython load_ext mechanisme here if distributed</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>get_ipython().register_magics(SaveCodeLines)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-9" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bounded_model_check(design, ports):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    bmc_run <span class="op">=</span> check(design, ports)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> bmc_run.result <span class="op">==</span> Result.PASS:</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">'Pass!'</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> bmc_run.result <span class="op">==</span> Result.FAIL:</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        search_format <span class="op">=</span> <span class="st">'Assert failed in top: </span><span class="sc">{}</span><span class="st">:</span><span class="sc">{linenumber:d}</span><span class="st">'</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        line_num <span class="op">=</span> search(search_format, <span class="bu">str</span>(bmc_run.stdout))[<span class="st">'linenumber'</span>]</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        step_format <span class="op">=</span> <span class="st">'Checking assertions in step </span><span class="sc">{step_num:d}</span><span class="st">..'</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        steps <span class="op">=</span> findall(step_format, <span class="bu">str</span>(bmc_run.stdout))</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        step_num <span class="op">=</span> <span class="bu">list</span>(steps)[<span class="op">-</span><span class="dv">1</span>][<span class="st">'step_num'</span>]</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f'Fail! Assertion failed at step </span><span class="sc">{</span>step_num<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f'Failed assertion on line </span><span class="sc">{</span>line_num<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        code <span class="op">=</span> <span class="op">%</span>showcodelines</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">'-------------------------------'</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(code.splitlines()[line_num<span class="op">-</span><span class="dv">2</span>:line_num<span class="op">+</span><span class="dv">1</span>]))</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">'-------------------------------'</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        display(bmc_run.drawing)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-10" class="cell" data-outputid="d86b9bb2-6b20-4ac0-9859-68b842573c46">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>design <span class="op">=</span> UpCounter(<span class="dv">5</span>, formal_fail<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>bounded_model_check(design, ports<span class="op">=</span>[design.en, design.ovf])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Fail! Assertion failed at step 2
+Failed assertion on line 32
+-------------------------------
+            with m.If(Past(self.count) &lt; self.limit):
+                m.d.sync += Assert(self.count == Past(self.count) + 2)
+            with m.Else():
+-------------------------------</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Yowasp_sby_files/figure-html/cell-7-output-2.svg" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-11" class="cell" data-outputid="04612df1-49d1-41b7-db69-364f956e8c28">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>design <span class="op">=</span> UpCounter(<span class="dv">5</span>, formal<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>bounded_model_check(design, ports<span class="op">=</span>[design.en, design.ovf])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Pass!</code></pre>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
